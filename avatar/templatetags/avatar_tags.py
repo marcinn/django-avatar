@@ -4,6 +4,8 @@ from django import template
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext as _
 from django.utils.hashcompat import md5_constructor
+from django.core.cache import cache
+import httplib
 
 from avatar import AVATAR_DEFAULT_URL, AVATAR_GRAVATAR_BACKUP
 
@@ -29,9 +31,22 @@ def avatar_url(user, size=80):
         return avatar.avatar_url(size)
     else:
         if AVATAR_GRAVATAR_BACKUP:
-            return "http://www.gravatar.com/avatar/%s/?%s" % (
-                md5_constructor(user.email).hexdigest(),
-                urllib.urlencode({'s': str(size)}),)
+            cache_key = 'gravatar_for_%s_%d' % (user, size)
+            url = cache.get(cache_key)
+            if not url:
+                url = "/avatar/%s/?%s" % (
+                    md5_constructor(user.email).hexdigest(),
+                    urllib.urlencode({'s': str(size), 'd': 404}),)
+                conn = httplib.HTTPConnection('www.gravatar.com')
+                conn.request('GET', url)
+                resp = conn.getresponse()
+                if resp.status == httplib.OK:
+                    url = 'http://www.gravatar.com%s' % url
+                    cache.set(cache_key, url, 86400)
+                else:
+                    url = AVATAR_DEFAULT_URL
+                    cache.set(cache_key, url, 3600)
+            return url
         else:
             return AVATAR_DEFAULT_URL
 register.simple_tag(avatar_url)
