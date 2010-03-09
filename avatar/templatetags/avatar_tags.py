@@ -37,15 +37,18 @@ def avatar_url(user, size=80):
                 url = "/avatar/%s/?%s" % (
                     md5_constructor(user.email).hexdigest(),
                     urllib.urlencode({'s': str(size), 'd': 404}),)
-                conn = httplib.HTTPConnection('www.gravatar.com')
-                conn.request('GET', url)
-                resp = conn.getresponse()
-                if resp.status == httplib.OK:
-                    url = 'http://www.gravatar.com%s' % url
-                    cache.set(cache_key, url, 86400)
-                else:
+                try:
+                    conn = httplib.HTTPConnection('www.gravatar.com', timeout=10)
+                    conn.request('GET', url)
+                    resp = conn.getresponse()
+                    if resp.status == httplib.OK:
+                        url = 'http://www.gravatar.com%s' % url
+                        cache.set(cache_key, url, 86400)
+                    else:
+                        url = AVATAR_DEFAULT_URL
+                        cache.set(cache_key, url, 3600)
+                except Exception:
                     url = AVATAR_DEFAULT_URL
-                    cache.set(cache_key, url, 3600)
             return url
         else:
             return AVATAR_DEFAULT_URL
