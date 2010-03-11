@@ -38,7 +38,7 @@ def avatar_url(user, size=80):
                     md5_constructor(user.email).hexdigest(),
                     urllib.urlencode({'s': str(size), 'd': 404}),)
                 try:
-                    conn = httplib.HTTPConnection('www.gravatar.com', timeout=10)
+                    conn = httplib.HTTPConnection('www.gravatar.com')
                     conn.request('GET', url)
                     resp = conn.getresponse()
                     if resp.status == httplib.OK:
