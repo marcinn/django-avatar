@@ -7,7 +7,7 @@ from django.utils.hashcompat import md5_constructor
 from django.core.cache import cache
 import httplib
 
-from avatar import AVATAR_DEFAULT_URL, AVATAR_GRAVATAR_BACKUP
+from avatar.settings import AVATAR_DEFAULT_URL, AVATAR_GRAVATAR_BACKUP
 
 register = template.Library()
 
