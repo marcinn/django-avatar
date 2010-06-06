@@ -1,4 +1,5 @@
 import os.path
+from django.conf import settings
 
 try:
     from PIL import Image
